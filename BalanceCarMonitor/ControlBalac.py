@@ -58,7 +58,11 @@ chartInfos = [
 
 #################### ロジック #########################
 class ControlBalac:
-    def __init__(self, balac_ipAddr, host, recv_port,  send_port):
+    def __init__(self, balac_ipAddr, host, recv_port,  send_port, params):
+        # parameterの設定
+        self.params = params
+
+        # Network設定
         self.dstAddr = (balac_ipAddr, send_port)    # Balacへの送信先情報
         self.host = host
         self.recv_port = recv_port
@@ -73,13 +77,11 @@ class ControlBalac:
 
         # Chartの作成
         plt.ion()                       # Turn the interactive mode on.
-        self.fig = plt.figure(1)
+        self.fig = plt.figure(figsize=(8.0, 6.0))
         #Chartのインスタンスをlistに格納
         self.charts = []
         for info in chartInfos:
             self.charts.append( SignalChart(self.fig, info.fig_pos, info.title, info.t_label, info.y_label, info.y_min, info.y_max, time) )
-
-        print(id(self.fig))
 
     def getFig(self):
         return self.fig
@@ -99,13 +101,24 @@ class ControlBalac:
 
             self.fig.tight_layout()      # グラフの文字がかぶらないようにする
             plt.pause(.01)               # グラフの更新
-            
-            # 送信
-            data = "{\"Kang\":37.0, \"Komg\":0.84, \"KIang\":800.0, \"Kyaw\":4.0, \"Kdst\":85.0, \"Kspd\":2.7}"
-            data = data.encode('utf-8')
 
-            # 受信側アドレスに送信
-            self.s.sendto(data,self.dstAddr)
+    def setParams(self, params):
+        self.params = params
+
+        # 送信
+        data = json.dumps(self.params)
+        data = data.encode('utf-8')
+
+        # 受信側アドレスに送信
+        self.s.sendto(data,self.dstAddr)
+
+    def operateBalac(self, operations):
+        # 送信
+        data = json.dumps(operations)
+        data = data.encode('utf-8')
+
+        # 受信側アドレスに送信
+        self.s.sendto(data,self.dstAddr)
 
     def closeBalac(self):
         # ソケットを閉じておく
