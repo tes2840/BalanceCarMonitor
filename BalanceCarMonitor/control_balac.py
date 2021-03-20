@@ -12,12 +12,11 @@ class SignalChart:
         self.y = np.zeros(100)
         self.init_t = float(init_t)
         self.key = title
-        #self.resolution = (abs(y_min)+abs(y_max))/1023
-
+        # グラフの設定
         self.ax = fig.add_subplot(fig_pos)
         self.line, = self.ax.plot(self.t, self.y)
-        self.ax.set_ylim(y_min, y_max)      #軸のyの下限、上限を設定
-        #ラベルの設定
+        self.ax.set_ylim(y_min, y_max)      # 軸のyの下限、上限を設定
+        # ラベルの設定
         self.ax.set_xlabel(t_label)
         self.ax.set_ylabel(y_label)
         self.ax.set_title(title)
@@ -37,23 +36,23 @@ class SignalChart:
 
 @dataclass
 class ChartInfo:
-    fig_pos:    int     #Chartを表示する位置
-    title:      str     #Chartのタイトル
-    t_label:    str     #x軸のラベル
-    y_label:    str     #y軸のラベル
-    y_min:      int     #y軸の最小値
-    y_max:      int     #y軸の最大値
+    fig_pos:    int     # Chartを表示する位置
+    title:      str     # Chartのタイトル
+    t_label:    str     # x軸のラベル
+    y_label:    str     # y軸のラベル
+    y_min:      int     # y軸の最小値
+    y_max:      int     # y軸の最大値
 
 # Chartの情報管理テーブル（Chartを追加したい場合はここに追記する)
 chartInfos = [
-    #         position,  title,      t_label,    y_label,                    y_min, y_max
-    ChartInfo(331,       "gyro_X",   "time[s]",  "Angular velocity[rad/s]",  -50,    50),
-    ChartInfo(332,       "gyro_Y",   "time[s]",  "Angular velocity[rad/s]",  -100,   100),
-    ChartInfo(333,       "gyro_Z",   "time[s]",  "Angular velocity[rad/s]",  -100,   100),
-    ChartInfo(334,       "acc_X",   "time[s]",  "velocity[m/s]",             -2,   2),
-    ChartInfo(335,       "acc_Z",   "time[s]",  "velocity[m/s]",             -1,   1),
-    ChartInfo(336,       "aveAccZ",   "time[s]",  "velocity[m/s]",           -1,   1),
-    ChartInfo(337,       "aveAbsOmg",   "time[s]",  "ngular velocity[rad/s]", 0,   2)
+    #         position,  title,         t_label,    y_label,                    y_min, y_max
+    ChartInfo(331,       "gyro_X",      "time[s]",  "Angular velocity[rad/s]",  -50,    50),
+    ChartInfo(332,       "gyro_Y",      "time[s]",  "Angular velocity[rad/s]",  -100,   100),
+    ChartInfo(333,       "gyro_Z",      "time[s]",  "Angular velocity[rad/s]",  -100,   100),
+    ChartInfo(334,       "acc_X",       "time[s]",  "velocity[m/s]",            -2,    2),
+    ChartInfo(335,       "acc_Z",       "time[s]",  "velocity[m/s]",            -1,    1),
+    ChartInfo(336,       "aveAccZ",     "time[s]",  "velocity[m/s]",            -1,    1),
+    ChartInfo(337,       "aveAbsOmg",   "time[s]",  "ngular velocity[rad/s]",   0,     2)
 ]
 
 #################### ロジック #########################
@@ -63,7 +62,7 @@ class ControlBalac:
         self.params = params
 
         # Network設定
-        self.dstAddr = (balac_ipAddr, send_port)    # Balacへの送信先情報
+        self.dstAddr = (balac_ipAddr, send_port)    # 送信先情報(Balac)
         self.host = host
         self.recv_port = recv_port
         # ソケットを用意
@@ -76,23 +75,23 @@ class ControlBalac:
         time = data["time"]
 
         # Chartの作成
-        plt.ion()                       # Turn the interactive mode on.
+        plt.ion()                                   # Turn the interactive mode on.
         self.fig = plt.figure(figsize=(8.0, 6.0))
-        #Chartのインスタンスをlistに格納
+        # Chartのインスタンスをlistに格納
         self.charts = []
         for info in chartInfos:
             self.charts.append( SignalChart(self.fig, info.fig_pos, info.title, info.t_label, info.y_label, info.y_min, info.y_max, time) )
 
-    def getFig(self):
+    def get_figure(self):
         return self.fig
 
-    def recvData(self):
+    def recv_data(self):
             msg, address = self.s.recvfrom(8192)
             data = json.loads(msg)
 
             # 取得したデータをグラフに反映
-            time = data["time"]     #　経過時間
-            keys = data.keys()      #　JsonObjectに含まれるキーの一覧
+            time = data["time"]     # 経過時間
+            keys = data.keys()      # JsonObjectに含まれるキーの一覧
             for key in keys:
                 for chart in self.charts:
                     if (chart.key == key):
@@ -102,24 +101,24 @@ class ControlBalac:
             self.fig.tight_layout()      # グラフの文字がかぶらないようにする
             plt.pause(.01)               # グラフの更新
 
-    def setParams(self, params):
+    def set_params(self, params):
         self.params = params
 
         # 送信
         data = json.dumps(self.params)
         data = data.encode('utf-8')
 
-        # 受信側アドレスに送信
+        # Balacに送信
         self.s.sendto(data,self.dstAddr)
 
-    def operateBalac(self, operations):
+    def operate_balac(self, operations):
         # 送信
         data = json.dumps(operations)
         data = data.encode('utf-8')
 
-        # 受信側アドレスに送信
+        # Balacに送信
         self.s.sendto(data,self.dstAddr)
 
-    def closeBalac(self):
-        # ソケットを閉じておく
+    def close_balac(self):
+        # ソケットを閉じる
         self.s.close()
