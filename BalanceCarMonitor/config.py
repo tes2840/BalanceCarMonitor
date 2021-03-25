@@ -18,10 +18,10 @@ sys.modules[__name__]=config()
 
 # Define
 # Balacのネットワーク設定
-config.BALAC_IP_ADDR= '192.168.11.101'
-config.BALAC_HOST   = ''
-config.BALAC_PORT   = 50008
-config.PC_RECV_PORT = 50007
+config.BALAC_IP_ADDR= '192.168.11.101'  # BalanceCar's IP address.
+config.BALAC_HOST   = ''                # BalanceCar's host name.
+config.BALAC_PORT   = 50008             # BalanceCar's port.
+config.PC_RECV_PORT = 50007             # Port of the PC running this application.
 
 # Balacのチューニングパラメータ初期値
 config.INIT_KANG    = 37.0

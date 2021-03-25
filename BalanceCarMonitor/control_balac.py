@@ -7,7 +7,7 @@ from dataclasses import dataclass
 #################### 定義 #########################
 # リアルタイムプロット
 class SignalChart:
-    def __init__(self, fig, fig_pos, title, t_label, y_label, y_min, y_max, init_t ):
+    def __init__(self, fig, fig_pos, title, x_label, y_label, y_min, y_max, init_t ):
         self.t = np.zeros(100)
         self.y = np.zeros(100)
         self.init_t = float(init_t)
@@ -17,8 +17,9 @@ class SignalChart:
         self.line, = self.ax.plot(self.t, self.y)
         self.ax.set_ylim(y_min, y_max)      # 軸のyの下限、上限を設定
         # ラベルの設定
-        self.ax.set_xlabel(t_label)
+        self.ax.set_xlabel(x_label)
         self.ax.set_ylabel(y_label)
+        
         self.ax.set_title(title)
 
     def draw(self, time, data):
@@ -46,13 +47,13 @@ class ChartInfo:
 # Chartの情報管理テーブル（Chartを追加したい場合はここに追記する)
 chartInfos = [
     #         position,  title,         t_label,    y_label,                    y_min, y_max
-    ChartInfo(331,       "gyro_X",      "time[s]",  "Angular velocity[rad/s]",  -50,    50),
-    ChartInfo(332,       "gyro_Y",      "time[s]",  "Angular velocity[rad/s]",  -100,   100),
-    ChartInfo(333,       "gyro_Z",      "time[s]",  "Angular velocity[rad/s]",  -100,   100),
-    ChartInfo(334,       "acc_X",       "time[s]",  "velocity[m/s]",            -2,    2),
-    ChartInfo(335,       "acc_Z",       "time[s]",  "velocity[m/s]",            -1,    1),
-    ChartInfo(336,       "aveAccZ",     "time[s]",  "velocity[m/s]",            -1,    1),
-    ChartInfo(337,       "aveAbsOmg",   "time[s]",  "ngular velocity[rad/s]",   0,     2)
+    ChartInfo(331,       "gyro_X",      "time[s]",  "[rad/s]",  -50,    50),
+    ChartInfo(332,       "gyro_Y",      "time[s]",  "[rad/s]",  -100,   100),
+    ChartInfo(333,       "gyro_Z",      "time[s]",  "[rad/s]",  -100,   100),
+    ChartInfo(334,       "acc_X",       "time[s]",  "[m/s]",            -2,    2),
+    ChartInfo(335,       "acc_Z",       "time[s]",  "[m/s]",            -2,    2),
+    ChartInfo(336,       "aveAccZ",     "time[s]",  "[m/s]",            -2,    2),
+    ChartInfo(337,       "aveAbsOmg",   "time[s]",  "[rad/s]",   0,     2)
 ]
 
 #################### ロジック #########################
@@ -76,7 +77,7 @@ class ControlBalac:
 
         # Chartの作成
         plt.ion()                                   # Turn the interactive mode on.
-        self.fig = plt.figure(figsize=(8.0, 6.0))
+        self.fig = plt.figure(figsize=(8.0, 6.0),dpi=100,tight_layout=True)
         # Chartのインスタンスをlistに格納
         self.charts = []
         for info in chartInfos:
@@ -97,8 +98,6 @@ class ControlBalac:
                     if (chart.key == key):
                         signal = data[key]
                         chart.draw(time,signal)
-
-            self.fig.tight_layout()      # グラフの文字がかぶらないようにする
             plt.pause(.01)               # グラフの更新
 
     def set_params(self, params):
